@@ -23,6 +23,16 @@ export interface UserServices {
   service_depth: string;
 }
 
+export interface ArabicGlossaryEntry {
+  /** The English term or bad Arabic phrase that the tool generated */
+  original: string;
+  /** The correct Arabic translation the user wants the tool to use instead */
+  corrected: string;
+  /** Optional note on when this applies */
+  note?: string;
+  created_at: number;
+}
+
 export interface LeadObservation {
   lead_name: string;
   profession: string;

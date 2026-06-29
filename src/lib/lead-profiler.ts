@@ -6,10 +6,11 @@ import type {
   LeadObservation,
   StepResult,
   UserServices,
+  ArabicGlossaryEntry,
 } from "./lead-profiler-types";
 
 // Re-export for convenience
-export type { StepName, LeadObservation, StepResult, UserServices };
+export type { StepName, LeadObservation, StepResult, UserServices, ArabicGlossaryEntry };
 
 async function callStep(
   step: StepName,
@@ -140,9 +141,19 @@ function buildStep5UserPrompt(
   step3r: Record<string, unknown>,
   step4: Record<string, unknown>,
   userServices: UserServices,
+  arabicGlossary: ArabicGlossaryEntry[],
 ): string {
   const n = obs.observation_notes;
   const a = obs.digital_presence_audit;
+
+  // Build the glossary section — only if there are entries
+  const glossarySection = arabicGlossary.length > 0
+    ? `MANDATORY ARABIC TRANSLATIONS (user-corrected — these are authoritative, do NOT use alternative translations):
+${arabicGlossary.map((g, i) => `${i + 1}. "${g.original}" → "${g.corrected}"${g.note ? ` (note: ${g.note})` : ""}`).join("\n")}
+
+When generating the Arabic opener, you MUST use these exact translations whenever the original term appears. These corrections were made by the user after reviewing previous openers — they represent the user's preferred Arabic phrasing. Do NOT override them with your own translations.`
+    : "(No user-corrected glossary entries yet. Use your best Arabic translation.)";
+
   return `STEP 1 OUTPUT (cultural context frame):
 ${JSON.stringify(step1, null, 2)}
 
@@ -157,6 +168,8 @@ ${JSON.stringify(step4, null, 2)}
 
 USER SERVICES (what you actually sell — use these for the offer and for honest social proof. NEVER invent social proof not in this object. Verify all Arabic translations of service terms.):
 ${JSON.stringify(userServices, null, 2)}
+
+${glossarySection}
 
 DIGITAL PRESENCE AUDIT (factual inventory — use this for cost_of_absence hooks):
 ${JSON.stringify(a, null, 2)}
@@ -181,6 +194,7 @@ export interface StepInput {
   step: StepName;
   observation: LeadObservation;
   userServices?: UserServices;
+  arabicGlossary?: ArabicGlossaryEntry[];
   step1?: Record<string, unknown>;
   step2?: Record<string, unknown>;
   step3a?: Record<string, unknown>;
@@ -190,7 +204,7 @@ export interface StepInput {
 }
 
 export async function runStep(input: StepInput): Promise<StepResult> {
-  const { step, observation, userServices } = input;
+  const { step, observation, userServices, arabicGlossary } = input;
   let output: Record<string, unknown>;
   let duration_ms = 0;
 
@@ -253,6 +267,7 @@ export async function runStep(input: StepInput): Promise<StepResult> {
           input.step3_reconciled,
           input.step4,
           userServices,
+          arabicGlossary ?? [],
         ),
       ));
       break;

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +20,7 @@ import {
   type StepName,
   type UserServices,
   type LeadObservation,
+  type ArabicGlossaryEntry,
 } from "@/lib/lead-profiler-types";
 import { ImageUploader, type UploadedImage } from "@/components/image-uploader";
 
@@ -83,6 +84,12 @@ interface StepState { status: StepStatus; output?: Record<string, unknown>; dura
 function LeadProfiler() {
   const [observation, setObservation] = useState<LeadObservation>(EMPTY_DATA);
   const [userServices, setUserServices] = useState<UserServices>(DEFAULT_USER_SERVICES);
+  const [arabicGlossary, setArabicGlossary] = useState<ArabicGlossaryEntry[]>(() => {
+    try {
+      const stored = localStorage.getItem("lead-profiler-arabic-glossary");
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
   const [steps, setSteps] = useState<Record<StepName, StepState>>({
     step1_culture_map: { status: "pending" }, step2_disc: { status: "pending" },
     step3a_status_anxiety: { status: "pending" }, step3b_laws: { status: "pending" },
@@ -97,6 +104,24 @@ function LeadProfiler() {
   const [isReadingPortfolio, setIsReadingPortfolio] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  // Persist glossary to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem("lead-profiler-arabic-glossary", JSON.stringify(arabicGlossary));
+    } catch { /* ignore quota errors */ }
+  }, [arabicGlossary]);
+
+  const addGlossaryEntry = useCallback((original: string, corrected: string, note?: string) => {
+    if (!original.trim() || !corrected.trim()) return;
+    setArabicGlossary((prev) => [...prev, { original: original.trim(), corrected: corrected.trim(), note: note?.trim() || undefined, created_at: Date.now() }]);
+    toast.success("Correction saved — future openers will use it");
+  }, []);
+
+  const deleteGlossaryEntry = useCallback((index: number) => {
+    setArabicGlossary((prev) => prev.filter((_, i) => i !== index));
+    toast.info("Correction removed");
+  }, []);
+
   const updateNote = useCallback((key: keyof LeadObservation["observation_notes"], value: string) => {
     setObservation((prev) => ({ ...prev, observation_notes: { ...prev.observation_notes, [key]: value } }));
   }, []);
@@ -104,11 +129,11 @@ function LeadProfiler() {
   const callStep = useCallback(async (step: StepName, accumulated: Record<string, Record<string, unknown> | undefined>) => {
     const res = await fetch("/api/profile-lead", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ step, observation, userServices, ...accumulated }),
+      body: JSON.stringify({ step, observation, userServices, arabicGlossary, ...accumulated }),
     });
     if (!res.ok) { const err = await res.json().catch(() => ({ error: "Network error" })); throw new Error(err.error ?? `HTTP ${res.status}`); }
     return (await res.json()) as { step: StepName; output: Record<string, unknown>; duration_ms: number };
-  }, [observation, userServices]);
+  }, [observation, userServices, arabicGlossary]);
 
   const runPipeline = useCallback(async () => {
     if (!observation.lead_name.trim() || !observation.profession.trim()) { toast.error("Lead name and profession are required"); return; }
@@ -341,7 +366,7 @@ function LeadProfiler() {
 
       {/* Results */}
       <div ref={resultsRef} className="mt-10 space-y-6">
-        {allDone && openerData ? <OpenerDisplay openerData={openerData} steps={steps} /> : (
+        {allDone && openerData ? <OpenerDisplay openerData={openerData} steps={steps} arabicGlossary={arabicGlossary} onAddGlossaryEntry={addGlossaryEntry} onDeleteGlossaryEntry={deleteGlossaryEntry} /> : (
           !isRunning && completedCount === 0 && (
             <Card className="border-dashed"><CardContent className="py-12 text-center text-muted-foreground"><ChevronRight className="w-8 h-8 mx-auto mb-3 opacity-30" /><p className="text-sm">Fill in the observation notes and click <span className="font-medium text-foreground">Generate Profile</span>.</p></CardContent></Card>
           )
@@ -391,7 +416,17 @@ function VlmExtractionPanel({ extraction, onAccept }: { extraction: Record<strin
 // Opener Display
 // ---------------------------------------------------------------------------
 
-function OpenerDisplay({ openerData, steps }: { openerData: Record<string, unknown>; steps: Record<StepName, StepState> }) {
+function OpenerDisplay({ openerData, steps, arabicGlossary, onAddGlossaryEntry, onDeleteGlossaryEntry }: {
+  openerData: Record<string, unknown>;
+  steps: Record<StepName, StepState>;
+  arabicGlossary: ArabicGlossaryEntry[];
+  onAddGlossaryEntry: (original: string, corrected: string, note?: string) => void;
+  onDeleteGlossaryEntry: (index: number) => void;
+}) {
+  const [showTeachSection, setShowTeachSection] = useState(false);
+  const [correctionOriginal, setCorrectionOriginal] = useState("");
+  const [correctionCorrected, setCorrectionCorrected] = useState("");
+  const [correctionNote, setCorrectionNote] = useState("");
   const opener = openerData.opener_draft as string | undefined;
   const alt = openerData.alternative_opener as string | undefined;
   const warnings = (openerData.warnings ?? []) as string[];
@@ -463,6 +498,95 @@ function OpenerDisplay({ openerData, steps }: { openerData: Record<string, unkno
           )}
           {warnings.length > 0 && (
             <Alert className="mt-4 border-amber-300 bg-amber-50 dark:bg-amber-950/20"><AlertTriangle className="w-4 h-4 text-amber-600" /><AlertTitle className="text-amber-900 dark:text-amber-200">Warnings — read before sending</AlertTitle><AlertDescription className="text-amber-900 dark:text-amber-200"><ul className="list-disc list-inside mt-1 space-y-1 text-sm">{warnings.map((w, i) => <li key={i}>{w}</li>)}</ul></AlertDescription></Alert>
+          )}
+
+          {/* Teach the tool — Arabic correction section */}
+          {isArabic && (
+            <div className="mt-4 border-2 border-purple-200 rounded-md p-4 bg-purple-50/50 dark:bg-purple-950/10 space-y-3">
+              <button
+                onClick={() => setShowTeachSection(!showTeachSection)}
+                className="flex items-center gap-2 text-sm font-semibold text-purple-900 dark:text-purple-100 w-full text-left"
+              >
+                <Wand2 className="w-4 h-4" />
+                {showTeachSection ? "▼ Hide correction panel" : "▶ Teach the tool — correct the Arabic"}
+                {arabicGlossary.length > 0 && <Badge variant="secondary" className="text-xs ml-auto">{arabicGlossary.length} saved</Badge>}
+              </button>
+
+              {showTeachSection && (
+                <div className="space-y-3">
+                  <p className="text-xs text-purple-700 dark:text-purple-300">
+                    Saw a bad Arabic phrase in the opener? Correct it here. The tool will use your correction in future openers.
+                    Paste the bad phrase, type the correct Arabic, and click Save.
+                  </p>
+
+                  <div className="space-y-2">
+                    <div>
+                      <Label className="text-xs text-purple-800 dark:text-purple-200">What the tool said (the bad phrase)</Label>
+                      <Input
+                        value={correctionOriginal}
+                        onChange={(e) => setCorrectionOriginal(e.target.value)}
+                        placeholder="e.g., الجولات التجارية or hope you're well"
+                        dir="rtl"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-purple-800 dark:text-purple-200">What it should be (correct Arabic)</Label>
+                      <Input
+                        value={correctionCorrected}
+                        onChange={(e) => setCorrectionCorrected(e.target.value)}
+                        placeholder="e.g., نظام الحجوزات"
+                        dir="rtl"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-purple-800 dark:text-purple-200">Note (optional)</Label>
+                      <Input
+                        value={correctionNote}
+                        onChange={(e) => setCorrectionNote(e.target.value)}
+                        placeholder="e.g., this is how Saudis actually say it"
+                        className="mt-1"
+                      />
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        onAddGlossaryEntry(correctionOriginal, correctionCorrected, correctionNote);
+                        setCorrectionOriginal(""); setCorrectionCorrected(""); setCorrectionNote("");
+                      }}
+                      disabled={!correctionOriginal.trim() || !correctionCorrected.trim()}
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      <Check className="w-3 h-3 mr-1" /> Save correction
+                    </Button>
+                  </div>
+
+                  {/* Show existing glossary entries */}
+                  {arabicGlossary.length > 0 && (
+                    <div className="mt-3 space-y-1">
+                      <div className="text-xs font-medium text-purple-800 dark:text-purple-200">Your saved corrections:</div>
+                      {arabicGlossary.map((entry, i) => (
+                        <div key={i} className="flex items-center gap-2 text-xs bg-white dark:bg-zinc-900 p-2 rounded border">
+                          <div className="flex-1 flex items-center gap-2 flex-wrap" dir="rtl">
+                            <span className="text-red-600 line-through">{entry.original}</span>
+                            <ArrowRight className="w-3 h-3 text-muted-foreground shrink-0" />
+                            <span className="text-green-700 dark:text-green-400 font-medium">{entry.corrected}</span>
+                          </div>
+                          <button
+                            onClick={() => onDeleteGlossaryEntry(i)}
+                            className="text-red-500 hover:text-red-700 shrink-0"
+                            title="Delete"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
