@@ -7,3 +7,4 @@ out/
 db/
 dist/
 .DS_Store
+.vercel
