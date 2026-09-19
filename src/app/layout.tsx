@@ -22,12 +22,22 @@ export const metadata: Metadata = {
     url: "https://leads.abdelhadygabriel.me",
     siteName: "Lead Profiler",
     type: "website",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Lead Profiler — Cold-outreach research compression" }],
   },
   title: "Lead Profiler — Cold-outreach research compression",
   description:
-    "5-step pipeline that turns 5 minutes of social-media observation into a pitch-ready WhatsApp opener. Culture Map → DiSC → Status Anxiety ∥ Laws of Human Nature → Influence → SPIN.",
+    "5-step pipeline that turns 5 minutes of social-media observation into a pitch-ready WhatsApp opener. DiSC, SPIN, Cialdini and Gulf-market playbooks.",
   keywords: ["sales", "lead profiling", "DISC", "SPIN selling", "Cialdini", "Gulf market", "WhatsApp outreach"],
   authors: [{ name: "Lead Profiler" }],
+  icons: {
+    icon: "/favicon.ico",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Lead Profiler — Cold-outreach research compression",
+    description: "5 minutes of observation → a pitch-ready WhatsApp opener. DiSC, SPIN, Cialdini playbooks.",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({
