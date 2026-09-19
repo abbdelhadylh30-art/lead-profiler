@@ -14,6 +14,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://leads.abdelhadygabriel.me"),
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Lead Profiler — Cold-outreach research compression",
+    description: "5-step pipeline that turns 5 minutes of social-media observation into a pitch-ready WhatsApp opener.",
+    url: "https://leads.abdelhadygabriel.me",
+    siteName: "Lead Profiler",
+    type: "website",
+  },
   title: "Lead Profiler — Cold-outreach research compression",
   description:
     "5-step pipeline that turns 5 minutes of social-media observation into a pitch-ready WhatsApp opener. Culture Map → DiSC → Status Anxiety ∥ Laws of Human Nature → Influence → SPIN.",
