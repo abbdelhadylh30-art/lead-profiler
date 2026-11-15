@@ -8,7 +8,6 @@ dev.out.log
 server.log
 .DS_Store
 upload
-download
 examples
 mini-services
 tool-results

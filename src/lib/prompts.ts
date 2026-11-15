@@ -1,7 +1,28 @@
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
-const PROMPTS_DIR = "/home/z/my-project/download/prompts";
+/**
+ * Resolve the prompts directory per environment:
+ * - Vercel / repo clones: <cwd>/download/prompts — shipped inside the
+ *   serverless bundle via outputFileTracingIncludes (next.config.ts)
+ * - Legacy Z.ai sandbox: /home/z/my-project/download/prompts
+ */
+function resolvePromptsDir(): string {
+  const candidates = [
+    join(process.cwd(), "download", "prompts"),
+    "/home/z/my-project/download/prompts",
+  ];
+  for (const dir of candidates) {
+    try {
+      if (existsSync(dir)) return dir;
+    } catch {
+      // ignore unreadable candidates
+    }
+  }
+  return candidates[0];
+}
+
+const PROMPTS_DIR = resolvePromptsDir();
 
 export type StepName =
   | "step1_culture_map"
