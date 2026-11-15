@@ -157,6 +157,7 @@ async function openAIChatCompletion(messages: ChatMessage[]): Promise<string> {
       messages,
       temperature: 0.4,
     }),
+    signal: AbortSignal.timeout(120000),
   });
 
   if (!res.ok) {
@@ -197,6 +198,7 @@ async function openAIVisionCompletion(
       temperature: 0.4,
       max_tokens: 4000,
     }),
+    signal: AbortSignal.timeout(180000),
   });
 
   if (!res.ok) {
