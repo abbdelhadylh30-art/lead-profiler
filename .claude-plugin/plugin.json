@@ -1,0 +1,23 @@
+{
+  "name": "lead-profiler",
+  "description": "Claude skill that turns real lead observations into honest, psychologically-tuned cold-outreach openers via a 7-book framework chain, with a code-level claim gate that refuses fabricated social proof. Runs against the hosted lead-profiler engine - no local install needed. Free, MIT.",
+  "version": "1.0.0",
+  "author": {
+    "name": "abbdelhadylh30-art",
+    "url": "https://leads.abdelhadygabriel.me"
+  },
+  "homepage": "https://github.com/abbdelhadylh30-art/lead-profiler",
+  "repository": "https://github.com/abbdelhadylh30-art/lead-profiler",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "claude-skills",
+    "lead-generation",
+    "cold-outreach",
+    "cold-email",
+    "sales",
+    "psychology",
+    "mcp"
+  ],
+  "skills": "./"
+}

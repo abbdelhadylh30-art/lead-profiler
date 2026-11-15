@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "lead-profiler",
+  "description": "The Lead Profiler skill for Claude",
+  "owner": {
+    "name": "abbdelhadylh30-art",
+    "url": "https://leads.abdelhadygabriel.me"
+  },
+  "plugins": [
+    {
+      "name": "lead-profiler",
+      "description": "Turns real lead observations into honest, psychologically-tuned cold-outreach openers (7-book framework chain: Culture Map, DiSC, Status Anxiety, Laws of Human Nature, Reconciliation, Influence, SPIN - plus a code-level claim gate). Runs against the hosted engine via REST; no local install needed.",
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/abbdelhadylh30-art/lead-profiler"
+    }
+  ]
+}

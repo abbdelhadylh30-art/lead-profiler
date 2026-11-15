@@ -63,11 +63,12 @@ vision calls with many images may not be.
 | `POST /api/analyze-lead-images` | VLM extraction of observation notes from profile screenshots (max 8) |
 | `POST /api/prospect-content-audit` | VLM content audit of a prospect's posts (max 12) |
 | `POST /api/read-portfolio` | Fetches a URL and extracts an honest `user_services` object |
+| `POST /api/verify-claims` | Code-level claim gate over REST: POST `opener` + the same `userServices`/`observation` → `passed`, `rejected_claims`, `do_not_send`. Same verifier the MCP package runs after step 5 |
 
 The UI chains the steps client-side, so each step's output is inspectable
 before the next one runs.
 
-When `AGENT_API_KEY` is set, all four routes require an agent key
+When `AGENT_API_KEY` is set, all five routes require an agent key
 (`x-api-key: <key>` or `Authorization: Bearer <key>`). Browser requests from
 the site itself keep working (same-origin `Sec-Fetch-Site` bypass) — see
 `src/lib/agent-auth.ts`.
@@ -103,6 +104,25 @@ opener is returned marked `do_not_send`.
 
 See `packages/lead-profiler-mcp/README.md` for full install instructions
 (Claude Desktop / Cursor / any stdio MCP client) and timeouts.
+
+## Use it as a skill (paste the link)
+
+The repo ships a [Claude Code skill/plugin](https://code.claude.com/docs/en/plugins) at `lead-profiler/SKILL.md` — the engine stays hosted, so the skill teaches any agent the workflow and it drives the REST API directly (no local install).
+
+**Claude Code** (plugin marketplace):
+
+```bash
+/plugin marketplace add abbdelhadylh30-art/lead-profiler
+/plugin install lead-profiler@lead-profiler
+```
+
+**Any other agent** (Codex, Cline, Z.ai agents, anything that reads repos):
+paste `https://github.com/abbdelhadylh30-art/lead-profiler` and tell it to read
+`lead-profiler/SKILL.md` — the skill contains the full honest workflow, and
+`lead-profiler/api-reference.md` the complete REST contract.
+
+**claude.ai (web/desktop):** download the `lead-profiler/` folder as a zip and
+upload it under Settings → Capabilities → Skills.
 
 ## Run locally
 
