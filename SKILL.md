@@ -252,6 +252,18 @@ This skill works wherever agents can fetch a SKILL.md from a link - no zip, no b
 - Claude Code (manual): clone the repo and copy `SKILL.md` into `~/.claude/skills/lead-profiler/`
 - Any other agent: paste this whole file at the top of a chat and follow it
 
+**Grok and other remote-MCP clients** don't read SKILL.md files - they speak MCP over HTTPS.
+Add the hosted remote MCP endpoint as a connector instead:
+
+```
+https://leads.abdelhadygabriel.me/api/mcp
+```
+
+It exposes the same 6 tools (`lead_profiler_playbook`, `read_portfolio`,
+`analyze_screenshots`, `audit_content`, `step`, `full_profile`) with the same
+claim gate. In Grok: grok.com -> Settings -> Connectors -> Add connector -> paste
+that URL. In any MCP client over Streamable HTTP, point it at the same URL.
+
 An MCP-server distribution of the same capability also exists
 (`npx -y github:abbdelhadylh30-art/lead-profiler#mcp`) for clients that prefer the Model
 Context Protocol. The hosted API documented above is identical in both.

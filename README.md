@@ -140,6 +140,24 @@ paste its contents at the top of a chat, and it runs as a mode.
 The extended REST contract (per-endpoint response shapes, error tables) lives in
 [`lead-profiler/api-reference.md`](lead-profiler/api-reference.md).
 
+## Remote MCP for Grok (and any hosted agent)
+
+Grok doesn't read GitHub links or skill files — its connectors speak **remote
+MCP** (Streamable HTTP). The same engine is exposed as a hosted MCP server:
+
+```
+https://leads.abdelhadygabriel.me/api/mcp
+```
+
+- **Grok:** grok.com → Settings → Connectors → Add connector → paste the URL.
+  Grok then gets all 6 tools (`lead_profiler_playbook`, `read_portfolio`,
+  `analyze_screenshots`, `audit_content`, `step`, `full_profile`), the claim
+  gate included.
+- **Any MCP-over-HTTPS client:** point it at the same URL (stateless Streamable
+  HTTP, JSON responses, no auth by default).
+- **Local stdio clients** (Claude Desktop, Cursor): keep using the package —
+  `npx -y github:abbdelhadylh30-art/lead-profiler#mcp`.
+
 ## Run locally
 
 ```bash
