@@ -105,9 +105,23 @@ opener is returned marked `do_not_send`.
 See `packages/lead-profiler-mcp/README.md` for full install instructions
 (Claude Desktop / Cursor / any stdio MCP client) and timeouts.
 
-## Use it as a skill (paste the link)
+## Use it as a skill (paste the link — no zip, no build)
 
-The repo ships a [Claude Code skill/plugin](https://code.claude.com/docs/en/plugins) at `lead-profiler/SKILL.md` — the engine stays hosted, so the skill teaches any agent the workflow and it drives the REST API directly (no local install).
+The repo root carries a self-contained [`SKILL.md`](SKILL.md) — the engine stays
+hosted, and the skill teaches any agent the honest workflow, then it drives the
+REST API directly. Install it wherever you like, always by link:
+
+**Paste the link into Claude** (claude.ai web/desktop, or Claude Code):
+
+```
+https://github.com/abbdelhadylh30-art/lead-profiler install skill
+```
+
+**Vercel skills CLI** (Claude Code, Codex, Cursor, and other agents):
+
+```bash
+npx skills add abbdelhadylh30-art/lead-profiler
+```
 
 **Claude Code** (plugin marketplace):
 
@@ -116,13 +130,15 @@ The repo ships a [Claude Code skill/plugin](https://code.claude.com/docs/en/plug
 /plugin install lead-profiler@lead-profiler
 ```
 
-**Any other agent** (Codex, Cline, Z.ai agents, anything that reads repos):
-paste `https://github.com/abbdelhadylh30-art/lead-profiler` and tell it to read
-`lead-profiler/SKILL.md` — the skill contains the full honest workflow, and
-`lead-profiler/api-reference.md` the complete REST contract.
+**Manual** (global or project-local): clone the repo and copy `SKILL.md` into
+`~/.claude/skills/lead-profiler/` or your repo's `.claude/skills/lead-profiler/`.
 
-**claude.ai (web/desktop):** download the `lead-profiler/` folder as a zip and
-upload it under Settings → Capabilities → Skills.
+**Any agent with no installer at all:** open
+[`SKILL.md`](https://github.com/abbdelhadylh30-art/lead-profiler/blob/main/SKILL.md),
+paste its contents at the top of a chat, and it runs as a mode.
+
+The extended REST contract (per-endpoint response shapes, error tables) lives in
+[`lead-profiler/api-reference.md`](lead-profiler/api-reference.md).
 
 ## Run locally
 
