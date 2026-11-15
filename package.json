@@ -1,0 +1,44 @@
+{
+  "name": "lead-profiler-mcp",
+  "version": "0.1.1",
+  "description": "MCP server for lead-profiler — turns real lead observations into honest, psychologically-tuned cold-outreach openers via a 7-book framework chain (Culture Map, DiSC, Status Anxiety, Laws of Human Nature, Reconciliation, Influence, SPIN).",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "lead-profiler-mcp": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "smoke": "node scripts/smoke-test.mjs"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abbdelhadylh30-art/lead-profiler.git",
+    "directory": "packages/lead-profiler-mcp"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "lead-generation",
+    "cold-outreach",
+    "sales",
+    "psychology"
+  ]
+}
