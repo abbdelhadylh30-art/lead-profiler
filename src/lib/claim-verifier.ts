@@ -103,12 +103,85 @@ const PATTERNS: Array<{ name: string; regex: RegExp; type: RejectedClaim["claim_
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Salutation-name check — the greeting must not invent a person
+// ---------------------------------------------------------------------------
+
+const SALUTATION_STOPWORDS = new Set([
+  // English generic addressees + honorifics
+  "there", "everyone", "friend", "friends", "team", "sir", "madam", "boss",
+  "folks", "all", "i", "you", "mr", "mrs", "ms", "dr",
+  // Arabic honorifics / generic addressees
+  "أستاذ", "أستاذة", "أخي", "أختي", "صديقي", "عمي", "خالي",
+]);
+
+const EN_GREETING_RE = /^\s*(?:hello|hi|hey|dear|good\s+(?:morning|afternoon|evening))\b[\s,،!–—-]*/i;
+const EN_NAME_RE = /^([A-Z][a-z'’-]+(?:\s+[A-Z][a-z'’-]+)?)/;
+const AR_GREETING_RE = /^\s*(?:السلام\s+عليكم(?:\s+ورحمة\s+الله(?:\s+وبركاته)?)?|أهلا(?:\s*وسهلا)?|مرحباً?|صباح\s+الخير|مساء\s+الخير)[\s,،!–—-]*/u;
+const AR_NAME_RE = /^([\u0621-\u064A]{2,})(?:\s+([\u0621-\u064A]{2,}))?/u;
+
+/**
+ * If the opener opens with a greeting + personal name, that name must exist
+ * in the source data. The model has been observed inventing names ("Hello Priya")
+ * for leads whose owner name was never established.
+ */
+function checkSalutation(
+  openerText: string,
+  sourceBlob: string,
+  rejected: RejectedClaim[],
+): void {
+  const text = openerText.trim();
+  if (!text) return;
+
+  // A captured "name" only counts as a name if it is followed by a separator
+  // (comma, dash, colon, end) — otherwise it is just the first word of a sentence.
+  const SEP_AFTER_RE = /^\s*(?:[،,;:!؟?—–-]|$)/;
+
+  let name: string | null = null;
+
+  const en = EN_GREETING_RE.exec(text);
+  if (en) {
+    const rest = text.slice(en[0].length);
+    const nm = EN_NAME_RE.exec(rest);
+    if (nm && SEP_AFTER_RE.test(rest.slice(nm[0].length))) name = nm[1];
+  } else {
+    const ar = AR_GREETING_RE.exec(text);
+    if (ar) {
+      const rest = text.slice(ar[0].length);
+      const nm = AR_NAME_RE.exec(rest);
+      if (nm && SEP_AFTER_RE.test(rest.slice(nm[0].length))) name = nm[1];
+      // A leading و (wa-) means the word is part of the greeting phrase, not a name
+      if (name && name.startsWith("و")) return;
+    }
+  }
+
+  if (!name) return;
+
+  const key = name.toLowerCase();
+  if (key.length < 2) return;
+  if (SALUTATION_STOPWORDS.has(key)) return;
+
+  if (!sourceBlob.includes(key)) {
+    rejected.push({
+      claim_text: `salutation name "${name}"`,
+      claim_type: "other",
+      reason: `the name "${name}" does not appear anywhere in user_services or the observation — the greeting invented a person`,
+      pattern_matched: "salutation_name",
+    });
+  }
+}
+
 /**
  * Build a single source-text blob from user_services + observation data,
  * so we can do simple substring checks.
  */
 function buildSourceBlob(userServices: UserServices, observation: LeadObservation): string {
   const parts: string[] = [];
+  // Lead identity fields — a greeting may legitimately address the lead by name
+  parts.push(observation.lead_name ?? "");
+  parts.push(observation.profession ?? "");
+  parts.push(observation.apparent_subculture ?? "");
+  parts.push(observation.westernization_signals ?? "");
   parts.push(userServices.primary ?? "");
   parts.push(userServices.secondary ?? "");
   parts.push(userServices.track_record ?? "");
@@ -206,6 +279,9 @@ export function verifyOpener(
       }
     }
   }
+
+  // Greeting must not address a person the sources never established
+  checkSalutation(openerText, sourceBlob, rejected);
 
   return {
     passed: rejected.length === 0,

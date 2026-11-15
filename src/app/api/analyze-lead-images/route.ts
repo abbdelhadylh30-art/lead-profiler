@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { visionCompletion } from "@/lib/llm-client";
+import { checkAgentAuth } from "@/lib/agent-auth";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -58,6 +59,9 @@ interface ImageInput { dataUrl: string; name: string; }
 
 export async function POST(req: NextRequest) {
   try {
+    const unauthorized = checkAgentAuth(req);
+    if (unauthorized) return unauthorized;
+
     const body = (await req.json()) as { images?: ImageInput[] };
     if (!body.images || !Array.isArray(body.images) || body.images.length === 0) {
       return NextResponse.json({ error: "At least one image is required" }, { status: 400 });

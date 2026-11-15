@@ -7,6 +7,7 @@ import {
   type UserServices,
   type ArabicGlossaryEntry,
 } from "@/lib/lead-profiler";
+import { checkAgentAuth } from "@/lib/agent-auth";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -22,10 +23,15 @@ interface RequestBody {
   step3b?: Record<string, unknown>;
   step3_reconciled?: Record<string, unknown>;
   step4?: Record<string, unknown>;
+  /** Regeneration directive for step5 — used by agent callers when the claim verifier rejected a previous attempt */
+  step5_feedback?: string;
 }
 
 export async function POST(req: NextRequest) {
   try {
+    const unauthorized = checkAgentAuth(req);
+    if (unauthorized) return unauthorized;
+
     const body = (await req.json()) as RequestBody;
 
     if (!body.step || !body.observation) {
@@ -46,6 +52,7 @@ export async function POST(req: NextRequest) {
       step3b: body.step3b,
       step3_reconciled: body.step3_reconciled,
       step4: body.step4,
+      step5_feedback: body.step5_feedback,
     };
 
     const result = await runStep(input);

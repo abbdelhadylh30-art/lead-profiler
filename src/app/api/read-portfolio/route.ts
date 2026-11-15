@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { chatCompletion, readPage } from "@/lib/llm-client";
+import { checkAgentAuth } from "@/lib/agent-auth";
 import type { UserServices } from "@/lib/lead-profiler-types";
 
 export const runtime = "nodejs";
@@ -38,6 +39,9 @@ Return ONLY a valid JSON object. No prose, no markdown fences.
 
 export async function POST(req: NextRequest) {
   try {
+    const unauthorized = checkAgentAuth(req);
+    if (unauthorized) return unauthorized;
+
     const { url } = (await req.json()) as { url?: string };
     if (!url) return NextResponse.json({ error: "URL is required" }, { status: 400 });
 

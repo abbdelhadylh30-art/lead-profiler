@@ -142,6 +142,7 @@ function buildStep5UserPrompt(
   step4: Record<string, unknown>,
   userServices: UserServices,
   arabicGlossary: ArabicGlossaryEntry[],
+  feedback?: string,
 ): string {
   const n = obs.observation_notes;
   const a = obs.digital_presence_audit;
@@ -153,6 +154,13 @@ ${arabicGlossary.map((g, i) => `${i + 1}. "${g.original}" → "${g.corrected}"${
 
 When generating the Arabic opener, you MUST use these exact translations whenever the original term appears. These corrections were made by the user after reviewing previous openers — they represent the user's preferred Arabic phrasing. Do NOT override them with your own translations.`
     : "(No user-corrected glossary entries yet. Use your best Arabic translation.)";
+
+  const feedbackSection = feedback
+    ? `REGENERATION DIRECTIVE (your previous opener draft was REJECTED by the code-level claim verifier — comply exactly):
+${feedback}
+
+Fix these issues in the regenerated opener. Omit any specific number, name, location, or metric that cannot be traced to the sources above. A vague-but-honest claim is always better than a specific-but-fabricated one.`
+    : "";
 
   return `STEP 1 OUTPUT (cultural context frame):
 ${JSON.stringify(step1, null, 2)}
@@ -183,7 +191,9 @@ RAW OBSERVATION NOTES:
 6. Pressure tells: ${n.pressure_tells}
 
 ADDITIONAL CONTEXT (scan this for the strongest activation signal — competitor mentions, stated-but-unfulfilled intentions, customer complaint patterns):
-${obs.additional_context ?? "N/A"}`;
+${obs.additional_context ?? "N/A"}
+
+${feedbackSection}`.trim();
 }
 
 // ---------------------------------------------------------------------------
@@ -201,10 +211,12 @@ export interface StepInput {
   step3b?: Record<string, unknown>;
   step3_reconciled?: Record<string, unknown>;
   step4?: Record<string, unknown>;
+  /** Regeneration directive for step5 — appended when the claim verifier rejected a previous attempt */
+  step5_feedback?: string;
 }
 
 export async function runStep(input: StepInput): Promise<StepResult> {
-  const { step, observation, userServices, arabicGlossary } = input;
+  const { step, observation, userServices, arabicGlossary, step5_feedback } = input;
   let output: Record<string, unknown>;
   let duration_ms = 0;
 
@@ -268,6 +280,7 @@ export async function runStep(input: StepInput): Promise<StepResult> {
           input.step4,
           userServices,
           arabicGlossary ?? [],
+          step5_feedback,
         ),
       ));
       break;

@@ -8,3 +8,4 @@ db/
 dist/
 .DS_Store
 .vercel
+tsconfig.tsbuildinfo

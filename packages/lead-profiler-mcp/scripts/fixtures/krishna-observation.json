@@ -1,0 +1,35 @@
+{
+  "observation": {
+    "lead_name": "Krishna's Kitchen",
+    "profession": "Home-based Indian catering and daily tiffin meal service owner",
+    "apparent_subculture": "Gujarati/North Indian immigrant small-business community in Etobicoke, GTA (Toronto)",
+    "westernization_signals": "English-first ad copy on Meta with standard Western ad formats; WhatsApp as the order channel; no diaspora-platform dependence visible",
+    "digital_presence_audit": {
+      "has_website": "no",
+      "website_notes": "No website found — five candidate domains all return NXDOMAIN; only third-party presence is a TiffinStash directory listing",
+      "has_booking_or_payment_link": "no",
+      "booking_notes": "Orders taken via WhatsApp DM from ad click-throughs",
+      "has_google_reviews": "no",
+      "google_reviews_notes": "No Google Business profile found in searches",
+      "primary_call_to_action": "dm",
+      "competitor_digital_presence": "GTA tiffin competitors run websites with online ordering menus",
+      "customer_complaint_pattern": "Not observed in captured material"
+    },
+    "observation_notes": {
+      "pace": "Active advertiser — multiple creatives running simultaneously in Facebook Ad Library (Canada); organic posting cadence not directly observed",
+      "people_orientation": "Warm, home-cooking tone in ad copy ('homemade', 'fresh tiffin'); community-family framing",
+      "content_shape": "Food photography creatives with promotional offers; simple production; ad-led rather than organic-content-led",
+      "engagement": "Not captured in available screenshots",
+      "self_presentation": "Brand-first (kitchen and food imagery); owner's face not prominent in captured ad creatives",
+      "pressure_tells": "Discount-led creatives suggest ongoing customer-acquisition pressure; no visible rants or stress signals"
+    },
+    "additional_context": "Found via Facebook Ad Library (Canada) — actively spending on ads that land on WhatsApp rather than a website or landing page, despite running multiple creatives. A third-party TiffinStash listing exists but is not controlled by the lead."
+  },
+  "user_services": {
+    "primary": "Simple websites and online ordering pages for small food businesses",
+    "secondary": "",
+    "past_work_examples": [],
+    "track_record": "Track record not specified — fill in manually",
+    "service_depth": "Fast, low-cost order-page builds that let food businesses take orders without WhatsApp chaos"
+  }
+}
