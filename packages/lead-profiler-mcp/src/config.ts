@@ -11,7 +11,7 @@ export interface Config {
   version: string;
 }
 
-export const PACKAGE_VERSION = "0.1.0";
+export const PACKAGE_VERSION = "0.1.1";
 export const SERVER_NAME = "lead-profiler";
 
 const DEFAULT_BASE_URL = "https://leads.abdelhadygabriel.me";
@@ -38,7 +38,7 @@ Desktop:
     "mcpServers": {
       "lead-profiler": {
         "command": "npx",
-        "args": ["-y", "lead-profiler-mcp"],
+        "args": ["-y", "github:abbdelhadylh30-art/lead-profiler#mcp"],
         "env": { "LEAD_PROFILER_API_KEY": "lpk_..." }
       }
     }

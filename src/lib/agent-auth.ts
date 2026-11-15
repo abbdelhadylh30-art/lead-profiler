@@ -44,7 +44,7 @@ export function checkAgentAuth(req: NextRequest): NextResponse | null {
     {
       error: "Unauthorized: this API requires an agent key.",
       hint: "Send header 'x-api-key: <your key>' (or 'Authorization: Bearer <your key>').",
-      docs: "https://github.com/abbdelhadylh30-art/lead-profiler#--installable-mcp-server-for-ai-agents",
+      docs: "https://github.com/abbdelhadylh30-art/lead-profiler#installable-mcp-server-for-ai-agents",
     },
     { status: 401 },
   );
