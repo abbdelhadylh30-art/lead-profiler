@@ -166,6 +166,28 @@ function checkSalutation(
 }
 
 /**
+ * Unreplaced placeholder check — template leaks like "Hi [First Name]" must
+ * not survive into a final opener. Replace with the lead's real name (from the
+ * observation) or drop the salutation.
+ */
+const PLACEHOLDER_RE = /\[\s*(?:first\s+)?name\s*\]|\{\s*(?:first\s+)?name\s*\}|<\s*(?:first\s+)?name\s*>/i;
+
+function checkPlaceholders(
+  openerText: string,
+  rejected: RejectedClaim[],
+): void {
+  const m = PLACEHOLDER_RE.exec(openerText);
+  if (m) {
+    rejected.push({
+      claim_text: m[0],
+      claim_type: "other",
+      reason: "unreplaced placeholder in the opener — use the lead's actual name from the observation, or remove the salutation entirely",
+      pattern_matched: "unreplaced_placeholder",
+    });
+  }
+}
+
+/**
  * Build a single source-text blob from user_services + observation data,
  * so we can do simple substring checks.
  */
@@ -274,8 +296,10 @@ export function verifyOpener(
     }
   }
 
-  // Greeting must not address a person the sources never established
+  // Greeting must not address a person the sources never established,
+  // and no template placeholders may survive into the final opener
   checkSalutation(openerText, sourceBlob, rejected);
+  checkPlaceholders(openerText, rejected);
 
   return {
     passed: rejected.length === 0,
